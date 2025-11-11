@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Booking Preview v2 • USD Selling & IDR Cost</title>
+  <style>
+    :root{
+      --bg:#0b1020; --panel:#111832; --muted:#97a3c4; --ink:#e8eefc; --brand:#5b8cff;
+      --border:rgba(255,255,255,.12); --ok:#25b981; --warn:#ffb020; --danger:#ff5d5d;
+      --card-grad:linear-gradient(180deg,#0f1732,#0d142a);
+    }
+    [data-theme="light"]{
+      --bg:#f7f9ff; --panel:#ffffff; --muted:#5b647f; --ink:#0e1333; --brand:#355fe6;
+      --border:rgba(0,0,0,.12); --card-grad:linear-gradient(180deg,#ffffff,#f4f6ff);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      color:var(--ink);
+      background: radial-gradient(1200px 600px at 10% -10%, #1a2454 0, rgba(26,36,84,0) 60%), linear-gradient(180deg,var(--bg),var(--bg));
+      transition: background .2s ease, color .2s ease;
+      line-height:1.5;
+    }
+    [data-theme="light"] body, [data-theme="light"]{
+      background: linear-gradient(180deg,var(--bg),var(--bg));
+    }
+    .wrap{max-width:1200px;margin:clamp(10px,3vw,32px) auto;padding:clamp(10px,2vw,20px)}
+    header{
+      display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap;
+      margin-bottom:12px;
+    }
+    .title{font-size:clamp(18px,2.8vw,28px); display:flex; gap:10px; align-items:center}
+    .badge{font-size:12px; padding:4px 10px; border-radius:999px; border:1px solid var(--border); color:var(--muted)}
+    .grid{display:grid; grid-template-columns:repeat(12,1fr); gap:12px}
+    .card{
+      grid-column:1 / -1; background:var(--card-grad); border:1px solid var(--border);
+      border-radius:16px; padding:clamp(12px,2vw,20px); box-shadow: 0 10px 25px rgba(0,0,0,.2);
+    }
+    [data-theme="light"] .card{ box-shadow: 0 10px 25px rgba(0,0,0,.08) }
+    .form-grid{display:grid; grid-template-columns:repeat(12,1fr); gap:10px}
+    .col-2{grid-column:span 2} .col-3{grid-column:span 3} .col-4{grid-column:span 4}
+    .col-6{grid-column:span 6} .col-8{grid-column:span 8} .col-12{grid-column:span 12}
+    @media (max-width: 900px){ .col-8,.col-6,.col-4,.col-3,.col-2{grid-column:span 12} }
+    label{display:block; font-size:12px; color:var(--muted); margin:4px 0 6px}
+    input,select,textarea{
+      width:100%; padding:11px 12px; border-radius:12px; border:1px solid var(--border); background:#0e142b;
+      color:var(--ink); outline:none; transition:border .15s, box-shadow .15s;
+    }
+    [data-theme="light"] input,[data-theme="light"] select,[data-theme="light"] textarea{ background:#f7f8ff }
+    input:focus,select:focus,textarea:focus{ border-color:#3353b8; box-shadow:0 0 0 3px rgba(91,140,255,.2) }
+    .row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+    .btn{ appearance:none; border:none; border-radius:12px; padding:10px 14px; font-weight:600; cursor:pointer;
+      background:linear-gradient(180deg,#6a93ff,#476fe4); color:white; box-shadow:0 10px 20px rgba(71,111,228,.25); }
+    .btn:active{ transform: translateY(1px) }
+    .btn.ghost{ background:transparent; color:var(--ink); border:1px solid var(--border); box-shadow:none }
+    .btn.ok{ background:linear-gradient(180deg,#58d68d,#1abc9c) }
+    .btn.warn{ background:linear-gradient(180deg,#ffc163,#ff9d2f) }
+    .btn.danger{ background:linear-gradient(180deg,#ff8484,#ff5d5d) }
+    .muted{ color:var(--muted) }
+    .pill{ padding:3px 8px; border-radius:999px; border:1px solid var(--border); color:var(--muted); font-size:12px }
+    .preview{ background:#0d1329; border:1px dashed var(--border); border-radius:12px; padding:14px }
+    [data-theme="light"] .preview{ background:#f5f7ff }
+    table{ width:100%; border-collapse:collapse; margin-top:10px; border:1px solid var(--border); border-radius:12px; overflow:hidden }
+    th,td{ padding:10px 12px; border-bottom:1px solid var(--border); text-align:left; vertical-align:top }
+    th{ background:#0f1836; color:#cfd8ff; font-weight:600 }
+    [data-theme="light"] th{ background:#e9eeff; color:#0e1333 }
+    tr:hover td{ background:rgba(255,255,255,.02) }
+    .footer{margin-top:12px; display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+    .right{margin-left:auto}
+  </style>
+</head>
+<body data-theme="dark">
+  <div class="wrap">
+    <header>
+      <div class="title">Booking Preview v2 <span class="badge">USD selling • IDR cost • responsive</span></div>
+      <div class="row">
+        <button class="btn ghost" id="toggleTheme">Light/Dark</button>
+        <button class="btn ghost" id="btnPrint">Print / PDF</button>
+        <button class="btn ok" id="btnExport">Export JSON</button>
+      </div>
+    </header>
+
+    <section class="grid">
+      <div class="card">
+        <div class="form-grid">
+          <div class="col-6">
+            <label for="bookingName">Booking Name</label>
+            <input id="bookingName" placeholder="Nama tamu (mis. AHMED Dilwar / QURESHI Kamona)" />
+          </div>
+          <div class="col-3">
+            <label for="checkin">Check-in</label>
+            <input type="date" id="checkin" />
+          </div>
+          <div class="col-3">
+            <label for="checkout">Check-out</label>
+            <input type="date" id="checkout" />
+          </div>
+
+          <div class="col-4">
+            <label for="agent">Agent Name</label>
+            <select id="agent"><option value="">— pilih agent —</option></select>
+          </div>
+          <div class="col-4">
+            <label for="stype">Supplier Type</label>
+            <select id="stype" disabled><option value="">— pilih type —</option></select>
+          </div>
+          <div class="col-4">
+            <label for="sname">Supplier Name</label>
+            <select id="sname" disabled><option value="">— pilih supplier —</option></select>
+          </div>
+
+          <div class="col-4" id="roomWrap" style="display:none">
+            <label for="room">Room Category</label>
+            <select id="room"></select>
+          </div>
+          <div class="col-2">
+            <label for="qty">Qty / Nights</label>
+            <input id="qty" type="number" min="1" value="1">
+          </div>
+
+          <div class="col-3">
+            <label for="unitSell">Unit Selling (USD)</label>
+            <input id="unitSell" disabled placeholder="Auto dari master">
+          </div>
+          <div class="col-3">
+            <label for="unitCost">Unit Cost (IDR)</label>
+            <input id="unitCost" disabled placeholder="Auto dari master">
+          </div>
+
+          <div class="col-3">
+            <label for="entranceUsd">Entrance Fee (USD)</label>
+            <input id="entranceUsd" disabled placeholder="Auto bila ada">
+          </div>
+          <div class="col-3">
+            <label for="entranceIdr">Entrance Fee (IDR)</label>
+            <input id="entranceIdr" disabled placeholder="Auto bila ada">
+          </div>
+
+          <div class="col-3">
+            <label for="fx">FX Rate (IDR per 1 USD)</label>
+            <input id="fx" type="number" min="1" step="1" placeholder="Mis. 15500">
+          </div>
+
+          <div class="col-3">
+            <label for="ref">Reference # (auto)</label>
+            <input id="ref" disabled>
+          </div>
+          <div class="col-6">
+            <label for="remarks">Remarks</label>
+            <input id="remarks" placeholder="Catatan (mis. kode penerbangan, pickup time, dsb)">
+          </div>
+
+          <div class="col-12 row" style="justify-content:flex-end; margin-top:4px">
+            <span class="pill" id="calcInfoUsd">Total Sell (USD): -</span>
+            <span class="pill" id="calcInfoIdr">Total Cost (IDR): -</span>
+            <span class="pill" id="marginInfo">Margin: -</span>
+            <button class="btn" id="btnPreview">Preview</button>
+            <button class="btn warn" id="btnAdd">Tambah ke Tabel</button>
+            <button class="btn ghost" id="btnReset">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="margin:6px 0 10px">Preview</h3>
+        <div class="preview" id="previewBox">
+          <span class="muted">Isi form di atas lalu klik <b>Preview</b> untuk melihat ringkasan.</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="row" style="justify-content:space-between">
+          <h3 style="margin:6px 0 10px">Line Items</h3>
+          <div class="row">
+            <span class="pill" id="grandSell">Grand Sell (USD): -</span>
+            <span class="pill" id="grandCost">Grand Cost (IDR): -</span>
+            <span class="pill" id="grandMargin">Est. Margin (USD): -</span>
+          </div>
+        </div>
+        <table id="tbl">
+          <thead>
+            <tr>
+              <th>Reference</th>
+              <th>Booking Name</th>
+              <th>Agent</th>
+              <th>Supplier</th>
+              <th>Type</th>
+              <th>Room</th>
+              <th>Qty</th>
+              <th>Unit Sell (USD)</th>
+              <th>Unit Cost (IDR)</th>
+              <th>Entrance (USD / IDR)</th>
+              <th>Total Sell (USD)</th>
+              <th>Total Cost (IDR)</th>
+              <th>Est. Margin (USD)</th>
+              <th>Tanggal</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+<script>
+// ====== MASTER DATA (contoh; ganti ke data riil klien) ======
+// Struktur: agent, type, name, room, unitSellUSD, unitCostIDR, entranceUSD, entranceIDR
+const MASTER = [
+  {agent:"Exotic Holidays", type:"Accommodation", name:"Kampi Hotel Tunjungan", room:"Champs room", unitSellUSD:60, unitCostIDR:750000, entranceUSD:0, entranceIDR:0},
+  {agent:"Exotic Holidays", type:"Transportation", name:"Kampi Hotel Tunjungan", room:"One-way transfer", unitSellUSD:25, unitCostIDR:300000, entranceUSD:0, entranceIDR:0},
+  {agent:"Exotic Holidays", type:"Flight ticket", name:"Universal Travel", room:"One-way", unitSellUSD:95, unitCostIDR:1250000, entranceUSD:0, entranceIDR:0},
+  {agent:"Exotic Holidays", type:"Local partner", name:"Orang Utan Applause", room:"3D2N AC cabin private", unitSellUSD:210, unitCostIDR:2500000, entranceUSD:0, entranceIDR:50000},
+  {agent:"flightsandpackages.co", type:"Accommodation", name:"Ramayana Suites & Resort", room:"Grand Deluxe room", unitSellUSD:1250, unitCostIDR:19169280, entranceUSD:0, entranceIDR:0},
+  {agent:"flightsandpackages.co", type:"Transportation", name:"Bali Pradana Transport (BPT)", room:"Inter-hotel transfer", unitSellUSD:35, unitCostIDR:400000, entranceUSD:0, entranceIDR:0},
+];
+
+// ====== Helpers ======
+const $ = sel => document.querySelector(sel);
+const uniq = arr => [...new Set(arr.filter(Boolean))];
+const fmtUSD = n => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:2}).format(n||0);
+const fmtIDR = n => new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(n||0);
+const by = (k,v) => o => o[k]===v;
+
+function genTN(){
+  const d = new Date();
+  const dd = String(d.getDate()).padStart(2,'0');
+  const mm = String(d.getMonth()+1).padStart(2,'0');
+  const yy = String(d.getFullYear()).slice(-2);
+  const seed = Math.floor((d.getHours()*3600+d.getMinutes()*60+d.getSeconds())%1000).toString().padStart(3,'0');
+  return `TN${dd}${mm}${yy}${seed}`;
+}
+
+function diffNights(a,b){
+  if(!a||!b) return 1;
+  const ms = (new Date(b) - new Date(a));
+  return Math.max(1, Math.ceil(ms/86400000));
+}
+
+// ====== Populate dropdowns ======
+function hydrateAgents(){
+  const agents = uniq(MASTER.map(m=>m.agent)).sort();
+  const sel = $("#agent");
+  sel.innerHTML = '<option value="">— pilih agent —</option>' + agents.map(a=>`<option>${a}</option>`).join("");
+}
+
+function hydrateTypes(agent){
+  const types = uniq(MASTER.filter(by("agent",agent)).map(m=>m.type)).sort();
+  const el = $("#stype");
+  el.disabled = !types.length;
+  el.innerHTML = '<option value="">— pilih type —</option>' + types.map(t=>`<option>${t}</option>`).join("");
+  $("#sname").innerHTML = '<option value="">— pilih supplier —</option>';
+  $("#sname").disabled = true;
+  $("#roomWrap").style.display = "none";
+}
+
+function hydrateSuppliers(agent,type){
+  const suppliers = uniq(MASTER.filter(m=>m.agent===agent && m.type===type).map(m=>m.name)).sort();
+  const el = $("#sname");
+  el.disabled = !suppliers.length;
+  el.innerHTML = '<option value="">— pilih supplier —</option>' + suppliers.map(s=>`<option>${s}</option>`).join("");
+  $("#roomWrap").style.display = "none";
+}
+
+function hydrateRooms(agent,type,name){
+  const rooms = uniq(MASTER.filter(m=>m.agent===agent && m.type===type && m.name===name).map(m=>m.room)).sort();
+  const wrap = $("#roomWrap");
+  const el = $("#room");
+  if(rooms.length){
+    wrap.style.display = "";
+    el.innerHTML = rooms.map(r=>`<option>${r}</option>`).join("");
+  }else{
+    wrap.style.display = "none";
+    el.innerHTML = "";
+  }
+}
+
+// ====== Auto price fill & calculations ======
+function updatePricing(){
+  const agent = $("#agent").value;
+  const type = $("#stype").value;
+  const name = $("#sname").value;
+  const room = $("#room").value || undefined;
+  const qty = +($("#qty").value||1);
+
+  const rows = MASTER.filter(m=>m.agent===agent && m.type===type && m.name===name && (room? m.room===room : true));
+  const pick = rows[0];
+  if(!pick){
+    $("#unitSell").value = "";
+    $("#unitCost").value = "";
+    $("#entranceUsd").value = "";
+    $("#entranceIdr").value = "";
+    $("#calcInfoUsd").textContent = "Total Sell (USD): -";
+    $("#calcInfoIdr").textContent = "Total Cost (IDR): -";
+    $("#marginInfo").textContent = "Margin: -";
+    return;
+  }
+  $("#unitSell").value = fmtUSD(pick.unitSellUSD);
+  $("#unitCost").value = fmtIDR(pick.unitCostIDR);
+  $("#entranceUsd").value = pick.entranceUSD ? fmtUSD(pick.entranceUSD) : "-";
+  $("#entranceIdr").value = pick.entranceIDR ? fmtIDR(pick.entranceIDR) : "-";
+
+  // Nights default if qty untouched
+  const nights = diffNights($("#checkin").value, $("#checkout").value);
+  const effQty = qty || nights || 1;
+
+  const totalSell = (pick.unitSellUSD * effQty) + (pick.entranceUSD||0);
+  const totalCost = (pick.unitCostIDR * effQty) + (pick.entranceIDR||0);
+
+  $("#calcInfoUsd").textContent = `Total Sell (USD): ${fmtUSD(totalSell)} (${effQty} x ${fmtUSD(pick.unitSellUSD)})`;
+  $("#calcInfoIdr").textContent = `Total Cost (IDR): ${fmtIDR(totalCost)} (${effQty} x ${fmtIDR(pick.unitCostIDR)})`;
+
+  // Margin (requires FX)
+  const fx = +($("#fx").value||0);
+  if(fx>0){
+    const costInUSD = totalCost / fx;
+    const marginUSD = totalSell - costInUSD;
+    const marginPct = totalSell ? (marginUSD/totalSell*100) : 0;
+    $("#marginInfo").textContent = `Margin: ${fmtUSD(marginUSD)} (${marginPct.toFixed(1)}%) @ FX ${fx}`;
+  }else{
+    $("#marginInfo").textContent = "Margin: masukkan FX untuk konversi IDR→USD";
+  }
+
+  return {pick,totalSell,totalCost,effQty};
+}
+
+// ====== Preview builder ======
+function buildPreview(){
+  const ref = $("#ref").value;
+  const bk = $("#bookingName").value || "(tanpa nama)";
+  const agent = $("#agent").value;
+  const type = $("#stype").value;
+  const name = $("#sname").value;
+  const room = $("#room").value;
+  const ci = $("#checkin").value; const co = $("#checkout").value;
+  const remarks = $("#remarks").value;
+  const fx = +($("#fx").value||0);
+  const {pick,totalSell,totalCost,effQty} = updatePricing() || {};
+  if(!(agent && type && name)){
+    $("#previewBox").innerHTML = '<span class="muted">Lengkapi pilihan Agent, Type, dan Supplier terlebih dahulu.</span>';
+    return null;
+  }
+  const costUSD = fx>0 ? (totalCost/fx) : null;
+  const marginUSD = fx>0 ? (totalSell - costUSD) : null;
+  const html = `
+    <div class="row" style="justify-content:space-between">
+      <div><b>${bk}</b><div class="muted" style="margin-top:2px">${agent} • ${type}</div></div>
+      <div class="pill">${ref}</div>
+    </div>
+    <hr style="border:none;border-top:1px solid var(--border);margin:10px 0">
+    <div class="grid" style="grid-template-columns:repeat(12,1fr);gap:10px">
+      <div style="grid-column:span 6">
+        <div class="muted">Supplier</div>
+        <div>${name}${room? " — <span class='muted'>"+room+"</span>":""}</div>
+      </div>
+      <div style="grid-column:span 3">
+        <div class="muted">Qty / Nights</div>
+        <div>${effQty}</div>
+      </div>
+      <div style="grid-column:span 3">
+        <div class="muted">Tanggal</div>
+        <div>${ci||"-"} s/d ${co||"-"}</div>
+      </div>
+
+      <div style="grid-column:span 4">
+        <div class="muted">Total Sell</div>
+        <div><b>${fmtUSD(totalSell||0)}</b></div>
+      </div>
+      <div style="grid-column:span 4">
+        <div class="muted">Total Cost</div>
+        <div><b>${fmtIDR(totalCost||0)}</b></div>
+      </div>
+      <div style="grid-column:span 4">
+        <div class="muted">Margin (est.)</div>
+        <div>${fx>0 ? "<b>"+fmtUSD(marginUSD)+"</b> @ FX "+fx : "<span class='muted'>Isi FX untuk lihat margin</span>"}</div>
+      </div>
+
+      <div style="grid-column:span 12">
+        <div class="muted">Remarks</div>
+        <div>${remarks||"-"}</div>
+      </div>
+    </div>`;
+  $("#previewBox").innerHTML = html;
+
+  return {
+    ref,bk,agent,type,name,room,qty:effQty,
+    unitSellUSD:pick?.unitSellUSD||0, unitCostIDR:pick?.unitCostIDR||0,
+    entranceUSD:pick?.entranceUSD||0, entranceIDR:pick?.entranceIDR||0,
+    totalSellUSD:totalSell||0, totalCostIDR:totalCost||0, fx:fx||null,
+    estMarginUSD: (fx>0 ? (totalSell - (totalCost/fx)) : null),
+    ci,co,remarks
+  };
+}
+
+// ====== Table handling ======
+const rows = [];
+function refreshTable(){
+  const tb = $("#tbl tbody");
+  tb.innerHTML = rows.map((r,i)=>`
+    <tr>
+      <td>${r.ref}</td>
+      <td>${r.bk}</td>
+      <td>${r.agent}</td>
+      <td>${r.name}</td>
+      <td>${r.type}</td>
+      <td>${r.room||"-"}</td>
+      <td>${r.qty}</td>
+      <td>${fmtUSD(r.unitSellUSD)}</td>
+      <td>${fmtIDR(r.unitCostIDR)}</td>
+      <td>${fmtUSD(r.entranceUSD||0)} / ${fmtIDR(r.entranceIDR||0)}</td>
+      <td><b>${fmtUSD(r.totalSellUSD)}</b></td>
+      <td><b>${fmtIDR(r.totalCostIDR)}</b></td>
+      <td>${r.fx? fmtUSD(r.totalSellUSD - (r.totalCostIDR/r.fx)) : "<span class='muted'>FX?</span>"}</td>
+      <td>${r.ci||"-"} → ${r.co||"-"}</td>
+      <td><button class="btn ghost" onclick="delRow(${i})">Hapus</button></td>
+    </tr>
+  `).join("");
+  const gSell = rows.reduce((a,b)=>a+(b.totalSellUSD||0),0);
+  const gCost = rows.reduce((a,b)=>a+(b.totalCostIDR||0),0);
+  const fx = +($("#fx").value||0);
+  $("#grandSell").textContent = "Grand Sell (USD): " + fmtUSD(gSell);
+  $("#grandCost").textContent = "Grand Cost (IDR): " + fmtIDR(gCost);
+  $("#grandMargin").textContent = "Est. Margin (USD): " + (fx>0 ? fmtUSD(gSell - (gCost/fx)) : "isi FX");
+}
+function delRow(i){ rows.splice(i,1); refreshTable(); }
+
+// ====== Init & events ======
+function resetForm(){
+  $("#bookingName").value = "";
+  $("#agent").value = "";
+  $("#stype").innerHTML = '<option value="">— pilih type —</option>';
+  $("#sname").innerHTML = '<option value="">— pilih supplier —</option>';
+  $("#stype").disabled = true;
+  $("#sname").disabled = true;
+  $("#roomWrap").style.display = "none";
+  $("#qty").value = 1;
+  $("#unitSell").value = "";
+  $("#unitCost").value = "";
+  $("#entranceUsd").value = "";
+  $("#entranceIdr").value = "";
+  $("#remarks").value = "";
+  $("#checkin").value = "";
+  $("#checkout").value = "";
+  $("#calcInfoUsd").textContent = "Total Sell (USD): -";
+  $("#calcInfoIdr").textContent = "Total Cost (IDR): -";
+  $("#marginInfo").textContent = "Margin: -";
+  $("#ref").value = genTN();
+  $("#previewBox").innerHTML = '<span class="muted">Isi form di atas lalu klik <b>Preview</b> untuk melihat ringkasan.</span>';
+}
+function init(){
+  hydrateAgents(); resetForm();
+  // Try keep theme from localStorage
+  const saved = localStorage.getItem("theme");
+  if(saved){ document.body.setAttribute("data-theme", saved); }
+}
+init();
+
+$("#agent").addEventListener("change", e=>{ hydrateTypes(e.target.value); updatePricing(); });
+$("#stype").addEventListener("change", e=>{ hydrateSuppliers($("#agent").value, e.target.value); updatePricing(); });
+$("#sname").addEventListener("change", e=>{ hydrateRooms($("#agent").value,$("#stype").value, e.target.value); updatePricing(); });
+$("#room").addEventListener("change", updatePricing);
+$("#qty").addEventListener("input", ()=>{ updatePricing(); });
+$("#checkin").addEventListener("change", ()=>{ $("#qty").value = diffNights($("#checkin").value,$("#checkout").value); updatePricing(); });
+$("#checkout").addEventListener("change", ()=>{ $("#qty").value = diffNights($("#checkin").value,$("#checkout").value); updatePricing(); });
+$("#fx").addEventListener("input", ()=>{ updatePricing(); refreshTable(); });
+
+$("#btnPreview").addEventListener("click", buildPreview);
+$("#btnAdd").addEventListener("click", ()=>{
+  const data = buildPreview();
+  if(!data) return;
+  rows.push(data);
+  refreshTable();
+  $("#ref").value = genTN(); // Next line new ref
+});
+$("#btnReset").addEventListener("click", resetForm);
+
+$("#btnExport").addEventListener("click", ()=>{
+  const blob = new Blob([JSON.stringify(rows,null,2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = "booking_preview_v2.json";
+  a.click();
+  URL.revokeObjectURL(url);
+});
+$("#btnPrint").addEventListener("click", ()=> window.print());
+
+$("#toggleTheme").addEventListener("click", ()=>{
+  const cur = document.body.getAttribute("data-theme")==="light" ? "dark":"light";
+  document.body.setAttribute("data-theme", cur);
+  localStorage.setItem("theme", cur);
+});
+</script>
+</body>
+</html>
