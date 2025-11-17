@@ -1,496 +1,1167 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Booking Preview v2 • USD Selling & IDR Cost</title>
+  <meta charset="UTF-8" />
+  <title>Travel Internal Dashboard – Prototype</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    :root{
-      --bg:#0b1020; --panel:#111832; --muted:#97a3c4; --ink:#e8eefc; --brand:#5b8cff;
-      --border:rgba(255,255,255,.12); --ok:#25b981; --warn:#ffb020; --danger:#ff5d5d;
-      --card-grad:linear-gradient(180deg,#0f1732,#0d142a);
+    :root {
+      --bg: #f4f5fb;
+      --card-bg: #ffffff;
+      --primary: #2563eb;
+      --primary-soft: #e0ebff;
+      --border: #e2e8f0;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --danger: #dc2626;
+      --shadow-soft: 0 10px 25px rgba(15, 23, 42, 0.06);
+      --radius-lg: 16px;
     }
-    [data-theme="light"]{
-      --bg:#f7f9ff; --panel:#ffffff; --muted:#5b647f; --ink:#0e1333; --brand:#355fe6;
-      --border:rgba(0,0,0,.12); --card-grad:linear-gradient(180deg,#ffffff,#f4f6ff);
+
+    * {
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
     }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-      color:var(--ink);
-      background: radial-gradient(1200px 600px at 10% -10%, #1a2454 0, rgba(26,36,84,0) 60%), linear-gradient(180deg,var(--bg),var(--bg));
-      transition: background .2s ease, color .2s ease;
-      line-height:1.5;
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: radial-gradient(circle at top left, #e0edff, #f9fafb 50%, #f3f4ff);
+      color: var(--text-main);
     }
-    [data-theme="light"] body, [data-theme="light"]{
-      background: linear-gradient(180deg,var(--bg),var(--bg));
+
+    .app-shell {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
     }
-    .wrap{max-width:1200px;margin:clamp(10px,3vw,32px) auto;padding:clamp(10px,2vw,20px)}
-    header{
-      display:flex; gap:12px; align-items:center; justify-content:space-between; flex-wrap:wrap;
-      margin-bottom:12px;
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      gap: 12px;
+      flex-wrap: wrap;
     }
-    .title{font-size:clamp(18px,2.8vw,28px); display:flex; gap:10px; align-items:center}
-    .badge{font-size:12px; padding:4px 10px; border-radius:999px; border:1px solid var(--border); color:var(--muted)}
-    .grid{display:grid; grid-template-columns:repeat(12,1fr); gap:12px}
-    .card{
-      grid-column:1 / -1; background:var(--card-grad); border:1px solid var(--border);
-      border-radius:16px; padding:clamp(12px,2vw,20px); box-shadow: 0 10px 25px rgba(0,0,0,.2);
+
+    header h1 {
+      margin: 0;
+      font-size: 22px;
+      letter-spacing: 0.02em;
     }
-    [data-theme="light"] .card{ box-shadow: 0 10px 25px rgba(0,0,0,.08) }
-    .form-grid{display:grid; grid-template-columns:repeat(12,1fr); gap:10px}
-    .col-2{grid-column:span 2} .col-3{grid-column:span 3} .col-4{grid-column:span 4}
-    .col-6{grid-column:span 6} .col-8{grid-column:span 8} .col-12{grid-column:span 12}
-    @media (max-width: 900px){ .col-8,.col-6,.col-4,.col-3,.col-2{grid-column:span 12} }
-    label{display:block; font-size:12px; color:var(--muted); margin:4px 0 6px}
-    input,select,textarea{
-      width:100%; padding:11px 12px; border-radius:12px; border:1px solid var(--border); background:#0e142b;
-      color:var(--ink); outline:none; transition:border .15s, box-shadow .15s;
+
+    header span {
+      font-size: 13px;
+      color: var(--text-muted);
     }
-    [data-theme="light"] input,[data-theme="light"] select,[data-theme="light"] textarea{ background:#f7f8ff }
-    input:focus,select:focus,textarea:focus{ border-color:#3353b8; box-shadow:0 0 0 3px rgba(91,140,255,.2) }
-    .row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
-    .btn{ appearance:none; border:none; border-radius:12px; padding:10px 14px; font-weight:600; cursor:pointer;
-      background:linear-gradient(180deg,#6a93ff,#476fe4); color:white; box-shadow:0 10px 20px rgba(71,111,228,.25); }
-    .btn:active{ transform: translateY(1px) }
-    .btn.ghost{ background:transparent; color:var(--ink); border:1px solid var(--border); box-shadow:none }
-    .btn.ok{ background:linear-gradient(180deg,#58d68d,#1abc9c) }
-    .btn.warn{ background:linear-gradient(180deg,#ffc163,#ff9d2f) }
-    .btn.danger{ background:linear-gradient(180deg,#ff8484,#ff5d5d) }
-    .muted{ color:var(--muted) }
-    .pill{ padding:3px 8px; border-radius:999px; border:1px solid var(--border); color:var(--muted); font-size:12px }
-    .preview{ background:#0d1329; border:1px dashed var(--border); border-radius:12px; padding:14px }
-    [data-theme="light"] .preview{ background:#f5f7ff }
-    table{ width:100%; border-collapse:collapse; margin-top:10px; border:1px solid var(--border); border-radius:12px; overflow:hidden }
-    th,td{ padding:10px 12px; border-bottom:1px solid var(--border); text-align:left; vertical-align:top }
-    th{ background:#0f1836; color:#cfd8ff; font-weight:600 }
-    [data-theme="light"] th{ background:#e9eeff; color:#0e1333 }
-    tr:hover td{ background:rgba(255,255,255,.02) }
-    .footer{margin-top:12px; display:flex; gap:10px; flex-wrap:wrap; align-items:center}
-    .right{margin-left:auto}
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      box-shadow: 0 14px 30px rgba(37, 99, 235, 0.3);
+      transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 18px 40px rgba(37, 99, 235, 0.35);
+      background: #1d4ed8;
+    }
+
+    .btn-secondary {
+      background: #eff3ff;
+      border-radius: 999px;
+      padding: 8px 14px;
+      border: 1px solid #d0ddff;
+      font-size: 13px;
+      color: #1f2937;
+      cursor: pointer;
+    }
+
+    .btn-secondary:hover {
+      background: #e1e8ff;
+    }
+
+    .btn-link {
+      border: none;
+      background: transparent;
+      padding: 0;
+      font-size: 12px;
+      color: var(--primary);
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    .btn-link.danger {
+      color: var(--danger);
+    }
+
+    .icon {
+      font-size: 18px;
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      padding: 16px 18px;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+    }
+
+    .grid {
+      display: grid;
+      gap: 16px;
+    }
+
+    @media (min-width: 900px) {
+      .grid-2 {
+        grid-template-columns: 2fr 1.3fr;
+      }
+      .grid-4 {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+    }
+
+    .search-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap;
+    }
+
+    .search-input-wrap {
+      position: relative;
+      flex: 1;
+      min-width: 230px;
+    }
+
+    .search-input-wrap input {
+      width: 100%;
+      border-radius: 999px;
+      padding: 9px 34px 9px 34px;
+      border: 1px solid var(--border);
+      font-size: 14px;
+      outline: none;
+      background: #f9fafb;
+    }
+
+    .search-input-wrap input:focus {
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+    }
+
+    .search-input-wrap .search-icon {
+      position: absolute;
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 16px;
+      color: var(--text-muted);
+    }
+
+    .search-input-wrap .search-hint {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .chip-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .chip {
+      padding: 6px 12px;
+      border-radius: 999px;
+      border: 1px solid #e5e7eb;
+      font-size: 12px;
+      cursor: pointer;
+      background: #f9fafb;
+      color: var(--text-muted);
+    }
+
+    .chip.active {
+      background: var(--primary-soft);
+      color: var(--primary);
+      border-color: #c4d5ff;
+    }
+
+    .summary-value {
+      font-size: 20px;
+      font-weight: 650;
+      margin: 8px 0 2px;
+    }
+
+    .summary-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-muted);
+    }
+
+    .summary-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th,
+    td {
+      padding: 6px 8px;
+      text-align: left;
+      border-bottom: 1px solid #e5e7eb;
+      vertical-align: middle;
+    }
+
+    th {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      background: #f9fafb;
+    }
+
+    tbody tr:hover {
+      background: #f3f4ff;
+    }
+
+    .tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 11px;
+      background: #eff6ff;
+      color: #1d4ed8;
+    }
+
+    .tag.small {
+      font-size: 10px;
+      padding: 1px 6px;
+    }
+
+    .muted {
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    .rq-pill {
+      font-family: ui-monospace, Menlo, Monaco, Consolas, "Liberation Mono",
+        "Courier New", monospace;
+      font-size: 12px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #0f172a;
+      color: #e5e7eb;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .rq-pill span {
+      font-size: 9px;
+      text-transform: uppercase;
+      color: #9ca3af;
+    }
+
+    .empty-state {
+      padding: 12px;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    /* Modal */
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 50;
+    }
+
+    .modal-backdrop.show {
+      display: flex;
+    }
+
+    .modal {
+      background: #ffffff;
+      max-width: 780px;
+      width: 100%;
+      border-radius: 18px;
+      padding: 18px 20px 16px;
+      box-shadow: 0 24px 60px rgba(15, 23, 42, 0.25);
+      max-height: 90vh;
+      overflow: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+      gap: 8px;
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: 17px;
+    }
+
+    .close-btn {
+      border: none;
+      background: transparent;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .form-group {
+      margin-bottom: 10px;
+    }
+
+    label {
+      display: block;
+      font-size: 12px;
+      margin-bottom: 4px;
+      color: #4b5563;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    input[type="number"],
+    select,
+    textarea {
+      width: 100%;
+      border-radius: 10px;
+      border: 1px solid #d1d5db;
+      padding: 7px 9px;
+      font-size: 13px;
+      outline: none;
+      background: #f9fafb;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 50px;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: var(--primary);
+      background: #fff;
+      box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+    }
+
+    .service-list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 6px 0;
+      gap: 8px;
+    }
+
+    .service-row {
+      display: grid;
+      grid-template-columns: 1.1fr 1.1fr 1.3fr 1fr 0.9fr auto;
+      gap: 6px;
+      margin-bottom: 6px;
+      align-items: center;
+    }
+
+    .service-row textarea {
+      grid-column: 1 / -2;
+    }
+
+    @media (max-width: 800px) {
+      .service-row {
+        grid-template-columns: 1fr 1fr;
+      }
+      .service-row textarea {
+        grid-column: 1 / -1;
+      }
+    }
+
+    .btn-ghost {
+      border-radius: 999px;
+      border: 1px dashed #d1d5db;
+      background: #f9fafb;
+      font-size: 12px;
+      padding: 6px 10px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-ghost:hover {
+      background: #eef2ff;
+      border-style: solid;
+    }
+
+    .pill-danger {
+      font-size: 11px;
+      color: var(--danger);
+      cursor: pointer;
+      background: #fee2e2;
+      border-radius: 999px;
+      padding: 2px 7px;
+      border: 1px solid #fecaca;
+      text-align: center;
+    }
+
+    .modal-footer {
+      margin-top: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .help-text {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
   </style>
 </head>
-<body data-theme="dark">
-  <div class="wrap">
+<body>
+  <div class="app-shell">
     <header>
-      <div class="title">Booking Preview v2 <span class="badge">USD selling • IDR cost • responsive</span></div>
-      <div class="row">
-        <button class="btn ghost" id="toggleTheme">Light/Dark</button>
-        <button class="btn ghost" id="btnPrint">Print / PDF</button>
-        <button class="btn ok" id="btnExport">Export JSON</button>
+      <div>
+        <h1>Travel Operation Dashboard</h1>
+        <span>Prototype alur kerja berbasis RQ# (laporan perjalanan klien)</span>
       </div>
+      <button class="btn-primary" id="btnOpenModal">
+        <span class="icon">＋</span>
+        <span>Add Booking</span>
+      </button>
     </header>
 
-    <section class="grid">
+    <!-- SEARCH + FILTER -->
+    <div class="card" style="margin-bottom:16px;">
+      <div class="search-row">
+        <div class="search-input-wrap">
+          <span class="search-icon">🔍</span>
+          <input
+            id="searchInput"
+            type="text"
+            placeholder="Cari by RQ# atau nama tamu… (misal: 011125 atau 'Ahmed')"
+          />
+          <span class="search-hint">Enter untuk cari</span>
+        </div>
+        <button class="btn-secondary" id="btnSearchToday">Order hari ini</button>
+        <button class="btn-secondary" id="btnSearchThisMonth">Order bulan ini</button>
+      </div>
+      <div class="chip-group">
+        <div class="chip active" data-service-filter="all">Semua service</div>
+        <div class="chip" data-service-filter="Accommodation">Accommodation</div>
+        <div class="chip" data-service-filter="Transportation">Transportation</div>
+        <div class="chip" data-service-filter="Flight Ticket">Flight Ticket</div>
+        <div class="chip" data-service-filter="Local Partner">Local Partner</div>
+      </div>
+    </div>
+
+    <!-- SUMMARY + TODAY TABLE -->
+    <div class="grid grid-2">
       <div class="card">
-        <div class="form-grid">
-          <div class="col-6">
-            <label for="bookingName">Booking Name</label>
-            <input id="bookingName" placeholder="Nama tamu (mis. AHMED Dilwar / QURESHI Kamona)" />
-          </div>
-          <div class="col-3">
-            <label for="checkin">Check-in</label>
-            <input type="date" id="checkin" />
-          </div>
-          <div class="col-3">
-            <label for="checkout">Check-out</label>
-            <input type="date" id="checkout" />
-          </div>
-
-          <div class="col-4">
-            <label for="agent">Agent Name</label>
-            <select id="agent"><option value="">— pilih agent —</option></select>
-          </div>
-          <div class="col-4">
-            <label for="stype">Supplier Type</label>
-            <select id="stype" disabled><option value="">— pilih type —</option></select>
-          </div>
-          <div class="col-4">
-            <label for="sname">Supplier Name</label>
-            <select id="sname" disabled><option value="">— pilih supplier —</option></select>
-          </div>
-
-          <div class="col-4" id="roomWrap" style="display:none">
-            <label for="room">Room Category</label>
-            <select id="room"></select>
-          </div>
-          <div class="col-2">
-            <label for="qty">Qty / Nights</label>
-            <input id="qty" type="number" min="1" value="1">
-          </div>
-
-          <div class="col-3">
-            <label for="unitSell">Unit Selling (USD)</label>
-            <input id="unitSell" disabled placeholder="Auto dari master">
-          </div>
-          <div class="col-3">
-            <label for="unitCost">Unit Cost (IDR)</label>
-            <input id="unitCost" disabled placeholder="Auto dari master">
-          </div>
-
-          <div class="col-3">
-            <label for="entranceUsd">Entrance Fee (USD)</label>
-            <input id="entranceUsd" disabled placeholder="Auto bila ada">
-          </div>
-          <div class="col-3">
-            <label for="entranceIdr">Entrance Fee (IDR)</label>
-            <input id="entranceIdr" disabled placeholder="Auto bila ada">
-          </div>
-
-          <div class="col-3">
-            <label for="fx">FX Rate (IDR per 1 USD)</label>
-            <input id="fx" type="number" min="1" step="1" placeholder="Mis. 15500">
-          </div>
-
-          <div class="col-3">
-            <label for="ref">Reference # (auto)</label>
-            <input id="ref" disabled>
-          </div>
-          <div class="col-6">
-            <label for="remarks">Remarks</label>
-            <input id="remarks" placeholder="Catatan (mis. kode penerbangan, pickup time, dsb)">
-          </div>
-
-          <div class="col-12 row" style="justify-content:flex-end; margin-top:4px">
-            <span class="pill" id="calcInfoUsd">Total Sell (USD): -</span>
-            <span class="pill" id="calcInfoIdr">Total Cost (IDR): -</span>
-            <span class="pill" id="marginInfo">Margin: -</span>
-            <button class="btn" id="btnPreview">Preview</button>
-            <button class="btn warn" id="btnAdd">Tambah ke Tabel</button>
-            <button class="btn ghost" id="btnReset">Reset</button>
+        <h3 style="margin:0 0 8px;font-size:14px;">Order service hari ini</h3>
+        <div id="todayTableWrapper">
+          <div class="empty-state">
+            Belum ada data. Tambahkan booking dengan tombol <b>Add Booking</b>.
           </div>
         </div>
       </div>
 
-      <div class="card">
-        <h3 style="margin:6px 0 10px">Preview</h3>
-        <div class="preview" id="previewBox">
-          <span class="muted">Isi form di atas lalu klik <b>Preview</b> untuk melihat ringkasan.</span>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="row" style="justify-content:space-between">
-          <h3 style="margin:6px 0 10px">Line Items</h3>
-          <div class="row">
-            <span class="pill" id="grandSell">Grand Sell (USD): -</span>
-            <span class="pill" id="grandCost">Grand Cost (IDR): -</span>
-            <span class="pill" id="grandMargin">Est. Margin (USD): -</span>
+      <div class="grid grid-4">
+        <div class="card">
+          <div class="summary-label">Pendapatan hari ini</div>
+          <div class="summary-value" id="revenueToday">0</div>
+          <div class="summary-sub">
+            Dari semua service dengan tanggal layanan = hari ini.
           </div>
         </div>
-        <table id="tbl">
-          <thead>
-            <tr>
-              <th>Reference</th>
-              <th>Booking Name</th>
-              <th>Agent</th>
-              <th>Supplier</th>
-              <th>Type</th>
-              <th>Room</th>
-              <th>Qty</th>
-              <th>Unit Sell (USD)</th>
-              <th>Unit Cost (IDR)</th>
-              <th>Entrance (USD / IDR)</th>
-              <th>Total Sell (USD)</th>
-              <th>Total Cost (IDR)</th>
-              <th>Est. Margin (USD)</th>
-              <th>Tanggal</th>
-              <th>Aksi</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
-        </table>
+        <div class="card">
+          <div class="summary-label">Pendapatan bulan ini</div>
+          <div class="summary-value" id="revenueMonth">0</div>
+          <div class="summary-sub">Semua service di bulan berjalan.</div>
+        </div>
+        <div class="card">
+          <div class="summary-label">Total booking</div>
+          <div class="summary-value" id="totalBookings">0</div>
+          <div class="summary-sub">Jumlah RQ# yang tercatat.</div>
+        </div>
+        <div class="card">
+          <div class="summary-label">Service tercatat</div>
+          <div class="summary-value" id="totalServices">0</div>
+          <div class="summary-sub">Baris aktivitas (hotel, transport, dll).</div>
+        </div>
       </div>
-    </section>
+    </div>
+
+    <!-- SEARCH RESULT -->
+    <div class="card" style="margin-top:18px;">
+      <h3 style="margin:0 0 8px;font-size:14px;">Hasil pencarian</h3>
+      <div id="searchResultWrapper">
+        <div class="empty-state">
+          Ketik RQ# atau nama tamu di atas lalu tekan <b>Enter</b>.
+        </div>
+      </div>
+    </div>
+
+    <!-- ALL BOOKINGS / CRUD -->
+    <div class="card" style="margin-top:18px;">
+      <h3 style="margin:0 0 8px;font-size:14px;">Daftar booking (CRUD temporary)</h3>
+      <div id="bookingListWrapper">
+        <div class="empty-state">
+          Belum ada booking. Gunakan tombol <b>Add Booking</b> untuk membuat data demo.
+        </div>
+      </div>
+    </div>
   </div>
 
-<script>
-// ====== MASTER DATA (contoh; ganti ke data riil klien) ======
-// Struktur: agent, type, name, room, unitSellUSD, unitCostIDR, entranceUSD, entranceIDR
-const MASTER = [
-  {agent:"Exotic Holidays", type:"Accommodation", name:"Kampi Hotel Tunjungan", room:"Champs room", unitSellUSD:60, unitCostIDR:750000, entranceUSD:0, entranceIDR:0},
-  {agent:"Exotic Holidays", type:"Transportation", name:"Kampi Hotel Tunjungan", room:"One-way transfer", unitSellUSD:25, unitCostIDR:300000, entranceUSD:0, entranceIDR:0},
-  {agent:"Exotic Holidays", type:"Flight ticket", name:"Universal Travel", room:"One-way", unitSellUSD:95, unitCostIDR:1250000, entranceUSD:0, entranceIDR:0},
-  {agent:"Exotic Holidays", type:"Local partner", name:"Orang Utan Applause", room:"3D2N AC cabin private", unitSellUSD:210, unitCostIDR:2500000, entranceUSD:0, entranceIDR:50000},
-  {agent:"flightsandpackages.co", type:"Accommodation", name:"Ramayana Suites & Resort", room:"Grand Deluxe room", unitSellUSD:1250, unitCostIDR:19169280, entranceUSD:0, entranceIDR:0},
-  {agent:"flightsandpackages.co", type:"Transportation", name:"Bali Pradana Transport (BPT)", room:"Inter-hotel transfer", unitSellUSD:35, unitCostIDR:400000, entranceUSD:0, entranceIDR:0},
-];
+  <!-- MODAL ADD / EDIT BOOKING -->
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <div>
+          <h2 id="modalTitle">Buat Booking Baru</h2>
+          <div class="help-text">
+            RQ# otomatis: format <b>NNMMYY</b> (nomor urut di bulan, bulan, tahun).
+          </div>
+        </div>
+        <button class="close-btn" id="btnCloseModal">&times;</button>
+      </div>
 
-// ====== Helpers ======
-const $ = sel => document.querySelector(sel);
-const uniq = arr => [...new Set(arr.filter(Boolean))];
-const fmtUSD = n => new Intl.NumberFormat('en-US',{style:'currency',currency:'USD',maximumFractionDigits:2}).format(n||0);
-const fmtIDR = n => new Intl.NumberFormat('id-ID',{style:'currency',currency:'IDR',maximumFractionDigits:0}).format(n||0);
-const by = (k,v) => o => o[k]===v;
+      <form id="bookingForm">
+        <div class="form-row">
+          <div class="form-group">
+            <label>RQ# (auto)</label>
+            <div class="rq-pill">
+              <span>RQ</span>
+              <strong id="generatedRq">000000</strong>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Booking / Arrival date</label>
+            <input type="date" id="bookingDate" required />
+          </div>
+        </div>
 
-function genTN(){
-  const d = new Date();
-  const dd = String(d.getDate()).padStart(2,'0');
-  const mm = String(d.getMonth()+1).padStart(2,'0');
-  const yy = String(d.getFullYear()).slice(-2);
-  const seed = Math.floor((d.getHours()*3600+d.getMinutes()*60+d.getSeconds())%1000).toString().padStart(3,'0');
-  return `TN${dd}${mm}${yy}${seed}`;
-}
+        <div class="form-group">
+          <label>Nama tamu / booking name</label>
+          <input
+            type="text"
+            id="guestName"
+            required
+            placeholder="Contoh: AHMED Dilwar Mr"
+          />
+        </div>
 
-function diffNights(a,b){
-  if(!a||!b) return 1;
-  const ms = (new Date(b) - new Date(a));
-  return Math.max(1, Math.ceil(ms/86400000));
-}
+        <div class="service-list-header">
+          <div>
+            <label style="margin-bottom:2px;">Service yang dibeli</label>
+            <div class="help-text">
+              1 RQ# bisa berisi banyak service (accommodation, transportation, dll).
+              Supplier name & locality hanya dari dummy data.
+            </div>
+          </div>
+          <button type="button" class="btn-ghost" id="btnAddServiceRow">
+            <span class="icon">＋</span> Tambah service
+          </button>
+        </div>
 
-// ====== Populate dropdowns ======
-function hydrateAgents(){
-  const agents = uniq(MASTER.map(m=>m.agent)).sort();
-  const sel = $("#agent");
-  sel.innerHTML = '<option value="">— pilih agent —</option>' + agents.map(a=>`<option>${a}</option>`).join("");
-}
+        <div id="serviceRowsContainer"></div>
 
-function hydrateTypes(agent){
-  const types = uniq(MASTER.filter(by("agent",agent)).map(m=>m.type)).sort();
-  const el = $("#stype");
-  el.disabled = !types.length;
-  el.innerHTML = '<option value="">— pilih type —</option>' + types.map(t=>`<option>${t}</option>`).join("");
-  $("#sname").innerHTML = '<option value="">— pilih supplier —</option>';
-  $("#sname").disabled = true;
-  $("#roomWrap").style.display = "none";
-}
-
-function hydrateSuppliers(agent,type){
-  const suppliers = uniq(MASTER.filter(m=>m.agent===agent && m.type===type).map(m=>m.name)).sort();
-  const el = $("#sname");
-  el.disabled = !suppliers.length;
-  el.innerHTML = '<option value="">— pilih supplier —</option>' + suppliers.map(s=>`<option>${s}</option>`).join("");
-  $("#roomWrap").style.display = "none";
-}
-
-function hydrateRooms(agent,type,name){
-  const rooms = uniq(MASTER.filter(m=>m.agent===agent && m.type===type && m.name===name).map(m=>m.room)).sort();
-  const wrap = $("#roomWrap");
-  const el = $("#room");
-  if(rooms.length){
-    wrap.style.display = "";
-    el.innerHTML = rooms.map(r=>`<option>${r}</option>`).join("");
-  }else{
-    wrap.style.display = "none";
-    el.innerHTML = "";
-  }
-}
-
-// ====== Auto price fill & calculations ======
-function updatePricing(){
-  const agent = $("#agent").value;
-  const type = $("#stype").value;
-  const name = $("#sname").value;
-  const room = $("#room").value || undefined;
-  const qty = +($("#qty").value||1);
-
-  const rows = MASTER.filter(m=>m.agent===agent && m.type===type && m.name===name && (room? m.room===room : true));
-  const pick = rows[0];
-  if(!pick){
-    $("#unitSell").value = "";
-    $("#unitCost").value = "";
-    $("#entranceUsd").value = "";
-    $("#entranceIdr").value = "";
-    $("#calcInfoUsd").textContent = "Total Sell (USD): -";
-    $("#calcInfoIdr").textContent = "Total Cost (IDR): -";
-    $("#marginInfo").textContent = "Margin: -";
-    return;
-  }
-  $("#unitSell").value = fmtUSD(pick.unitSellUSD);
-  $("#unitCost").value = fmtIDR(pick.unitCostIDR);
-  $("#entranceUsd").value = pick.entranceUSD ? fmtUSD(pick.entranceUSD) : "-";
-  $("#entranceIdr").value = pick.entranceIDR ? fmtIDR(pick.entranceIDR) : "-";
-
-  // Nights default if qty untouched
-  const nights = diffNights($("#checkin").value, $("#checkout").value);
-  const effQty = qty || nights || 1;
-
-  const totalSell = (pick.unitSellUSD * effQty) + (pick.entranceUSD||0);
-  const totalCost = (pick.unitCostIDR * effQty) + (pick.entranceIDR||0);
-
-  $("#calcInfoUsd").textContent = `Total Sell (USD): ${fmtUSD(totalSell)} (${effQty} x ${fmtUSD(pick.unitSellUSD)})`;
-  $("#calcInfoIdr").textContent = `Total Cost (IDR): ${fmtIDR(totalCost)} (${effQty} x ${fmtIDR(pick.unitCostIDR)})`;
-
-  // Margin (requires FX)
-  const fx = +($("#fx").value||0);
-  if(fx>0){
-    const costInUSD = totalCost / fx;
-    const marginUSD = totalSell - costInUSD;
-    const marginPct = totalSell ? (marginUSD/totalSell*100) : 0;
-    $("#marginInfo").textContent = `Margin: ${fmtUSD(marginUSD)} (${marginPct.toFixed(1)}%) @ FX ${fx}`;
-  }else{
-    $("#marginInfo").textContent = "Margin: masukkan FX untuk konversi IDR→USD";
-  }
-
-  return {pick,totalSell,totalCost,effQty};
-}
-
-// ====== Preview builder ======
-function buildPreview(){
-  const ref = $("#ref").value;
-  const bk = $("#bookingName").value || "(tanpa nama)";
-  const agent = $("#agent").value;
-  const type = $("#stype").value;
-  const name = $("#sname").value;
-  const room = $("#room").value;
-  const ci = $("#checkin").value; const co = $("#checkout").value;
-  const remarks = $("#remarks").value;
-  const fx = +($("#fx").value||0);
-  const {pick,totalSell,totalCost,effQty} = updatePricing() || {};
-  if(!(agent && type && name)){
-    $("#previewBox").innerHTML = '<span class="muted">Lengkapi pilihan Agent, Type, dan Supplier terlebih dahulu.</span>';
-    return null;
-  }
-  const costUSD = fx>0 ? (totalCost/fx) : null;
-  const marginUSD = fx>0 ? (totalSell - costUSD) : null;
-  const html = `
-    <div class="row" style="justify-content:space-between">
-      <div><b>${bk}</b><div class="muted" style="margin-top:2px">${agent} • ${type}</div></div>
-      <div class="pill">${ref}</div>
+        <div class="modal-footer">
+          <div class="help-text">
+            Data disimpan di memori browser (temporary demo). Akan hilang jika tab
+            di-refresh.
+          </div>
+          <div style="display:flex;gap:8px;">
+            <button type="button" class="btn-secondary" id="btnCancelModal">
+              Batal
+            </button>
+            <button type="submit" class="btn-primary">
+              <span class="icon">💾</span> Simpan booking
+            </button>
+          </div>
+        </div>
+      </form>
     </div>
-    <hr style="border:none;border-top:1px solid var(--border);margin:10px 0">
-    <div class="grid" style="grid-template-columns:repeat(12,1fr);gap:10px">
-      <div style="grid-column:span 6">
-        <div class="muted">Supplier</div>
-        <div>${name}${room? " — <span class='muted'>"+room+"</span>":""}</div>
-      </div>
-      <div style="grid-column:span 3">
-        <div class="muted">Qty / Nights</div>
-        <div>${effQty}</div>
-      </div>
-      <div style="grid-column:span 3">
-        <div class="muted">Tanggal</div>
-        <div>${ci||"-"} s/d ${co||"-"}</div>
-      </div>
+  </div>
 
-      <div style="grid-column:span 4">
-        <div class="muted">Total Sell</div>
-        <div><b>${fmtUSD(totalSell||0)}</b></div>
-      </div>
-      <div style="grid-column:span 4">
-        <div class="muted">Total Cost</div>
-        <div><b>${fmtIDR(totalCost||0)}</b></div>
-      </div>
-      <div style="grid-column:span 4">
-        <div class="muted">Margin (est.)</div>
-        <div>${fx>0 ? "<b>"+fmtUSD(marginUSD)+"</b> @ FX "+fx : "<span class='muted'>Isi FX untuk lihat margin</span>"}</div>
-      </div>
+  <script>
+    // ====== DUMMY DATA SUPPLIER ======
+    const SUPPLIER_DATA = {
+      Accommodation: {
+        Kuta: [
+          "Ramayana Suites & Resort",
+          "Kuta Paradiso Hotel",
+          "Hard Rock Hotel"
+        ],
+        Sanur: ["Puri Santrian", "Maya Sanur", "Prama Sanur Beach"],
+        Ubud: ["Alaya Resort Ubud", "Komaneka Bisma", "Element by Westin Ubud"]
+      },
+      Transportation: {
+        Denpasar: [
+          "Bali Pradana Transport (BPT)",
+          "Bali Mita Driver",
+          "Surya Transport"
+        ],
+        Jimbaran: ["Jimbaran Transport Service", "Bukit Shuttle"]
+      },
+      "Flight Ticket": {
+        "Domestic Flight": ["Garuda Indonesia", "Lion Air", "Citilink"],
+        "International Flight": [
+          "Singapore Airlines",
+          "Malaysia Airlines",
+          "AirAsia"
+        ]
+      },
+      "Local Partner": {
+        "Pangkal Bun": ["Orang Utan Applause", "Borneo Eco Trip"],
+        Surabaya: ["Kampi Hotel Tunjungan", "Surabaya Travel Club"]
+      }
+    };
 
-      <div style="grid-column:span 12">
-        <div class="muted">Remarks</div>
-        <div>${remarks||"-"}</div>
-      </div>
-    </div>`;
-  $("#previewBox").innerHTML = html;
+    // ====== STATE SEMENTARA ======
+    let bookings = []; // {id, rq, guestName, bookingDate, services:[...]}
+    let bookingCounter = 1; // untuk NN di NNMMYY
+    let editingBookingId = null;
+    let activeServiceFilter = "all";
 
-  return {
-    ref,bk,agent,type,name,room,qty:effQty,
-    unitSellUSD:pick?.unitSellUSD||0, unitCostIDR:pick?.unitCostIDR||0,
-    entranceUSD:pick?.entranceUSD||0, entranceIDR:pick?.entranceIDR||0,
-    totalSellUSD:totalSell||0, totalCostIDR:totalCost||0, fx:fx||null,
-    estMarginUSD: (fx>0 ? (totalSell - (totalCost/fx)) : null),
-    ci,co,remarks
-  };
-}
+    const todayStr = new Date().toISOString().slice(0, 10);
 
-// ====== Table handling ======
-const rows = [];
-function refreshTable(){
-  const tb = $("#tbl tbody");
-  tb.innerHTML = rows.map((r,i)=>`
-    <tr>
-      <td>${r.ref}</td>
-      <td>${r.bk}</td>
-      <td>${r.agent}</td>
-      <td>${r.name}</td>
-      <td>${r.type}</td>
-      <td>${r.room||"-"}</td>
-      <td>${r.qty}</td>
-      <td>${fmtUSD(r.unitSellUSD)}</td>
-      <td>${fmtIDR(r.unitCostIDR)}</td>
-      <td>${fmtUSD(r.entranceUSD||0)} / ${fmtIDR(r.entranceIDR||0)}</td>
-      <td><b>${fmtUSD(r.totalSellUSD)}</b></td>
-      <td><b>${fmtIDR(r.totalCostIDR)}</b></td>
-      <td>${r.fx? fmtUSD(r.totalSellUSD - (r.totalCostIDR/r.fx)) : "<span class='muted'>FX?</span>"}</td>
-      <td>${r.ci||"-"} → ${r.co||"-"}</td>
-      <td><button class="btn ghost" onclick="delRow(${i})">Hapus</button></td>
-    </tr>
-  `).join("");
-  const gSell = rows.reduce((a,b)=>a+(b.totalSellUSD||0),0);
-  const gCost = rows.reduce((a,b)=>a+(b.totalCostIDR||0),0);
-  const fx = +($("#fx").value||0);
-  $("#grandSell").textContent = "Grand Sell (USD): " + fmtUSD(gSell);
-  $("#grandCost").textContent = "Grand Cost (IDR): " + fmtIDR(gCost);
-  $("#grandMargin").textContent = "Est. Margin (USD): " + (fx>0 ? fmtUSD(gSell - (gCost/fx)) : "isi FX");
-}
-function delRow(i){ rows.splice(i,1); refreshTable(); }
+    // ====== ELEMENT REFS ======
+    const modalBackdrop = document.getElementById("modalBackdrop");
+    const btnOpenModal = document.getElementById("btnOpenModal");
+    const btnCloseModal = document.getElementById("btnCloseModal");
+    const btnCancelModal = document.getElementById("btnCancelModal");
+    const bookingForm = document.getElementById("bookingForm");
+    const generatedRqSpan = document.getElementById("generatedRq");
+    const bookingDateInput = document.getElementById("bookingDate");
+    const guestNameInput = document.getElementById("guestName");
+    const serviceRowsContainer = document.getElementById("serviceRowsContainer");
+    const btnAddServiceRow = document.getElementById("btnAddServiceRow");
+    const modalTitle = document.getElementById("modalTitle");
 
-// ====== Init & events ======
-function resetForm(){
-  $("#bookingName").value = "";
-  $("#agent").value = "";
-  $("#stype").innerHTML = '<option value="">— pilih type —</option>';
-  $("#sname").innerHTML = '<option value="">— pilih supplier —</option>';
-  $("#stype").disabled = true;
-  $("#sname").disabled = true;
-  $("#roomWrap").style.display = "none";
-  $("#qty").value = 1;
-  $("#unitSell").value = "";
-  $("#unitCost").value = "";
-  $("#entranceUsd").value = "";
-  $("#entranceIdr").value = "";
-  $("#remarks").value = "";
-  $("#checkin").value = "";
-  $("#checkout").value = "";
-  $("#calcInfoUsd").textContent = "Total Sell (USD): -";
-  $("#calcInfoIdr").textContent = "Total Cost (IDR): -";
-  $("#marginInfo").textContent = "Margin: -";
-  $("#ref").value = genTN();
-  $("#previewBox").innerHTML = '<span class="muted">Isi form di atas lalu klik <b>Preview</b> untuk melihat ringkasan.</span>';
-}
-function init(){
-  hydrateAgents(); resetForm();
-  // Try keep theme from localStorage
-  const saved = localStorage.getItem("theme");
-  if(saved){ document.body.setAttribute("data-theme", saved); }
-}
-init();
+    const revenueTodayEl = document.getElementById("revenueToday");
+    const revenueMonthEl = document.getElementById("revenueMonth");
+    const totalBookingsEl = document.getElementById("totalBookings");
+    const totalServicesEl = document.getElementById("totalServices");
+    const todayTableWrapper = document.getElementById("todayTableWrapper");
+    const searchInput = document.getElementById("searchInput");
+    const searchResultWrapper = document.getElementById("searchResultWrapper");
+    const btnSearchToday = document.getElementById("btnSearchToday");
+    const btnSearchThisMonth = document.getElementById("btnSearchThisMonth");
+    const chips = document.querySelectorAll(".chip");
+    const bookingListWrapper = document.getElementById("bookingListWrapper");
 
-$("#agent").addEventListener("change", e=>{ hydrateTypes(e.target.value); updatePricing(); });
-$("#stype").addEventListener("change", e=>{ hydrateSuppliers($("#agent").value, e.target.value); updatePricing(); });
-$("#sname").addEventListener("change", e=>{ hydrateRooms($("#agent").value,$("#stype").value, e.target.value); updatePricing(); });
-$("#room").addEventListener("change", updatePricing);
-$("#qty").addEventListener("input", ()=>{ updatePricing(); });
-$("#checkin").addEventListener("change", ()=>{ $("#qty").value = diffNights($("#checkin").value,$("#checkout").value); updatePricing(); });
-$("#checkout").addEventListener("change", ()=>{ $("#qty").value = diffNights($("#checkin").value,$("#checkout").value); updatePricing(); });
-$("#fx").addEventListener("input", ()=>{ updatePricing(); refreshTable(); });
+    // ====== UTIL ======
+    function formatCurrency(n) {
+      return new Intl.NumberFormat("id-ID", {
+        style: "currency",
+        currency: "IDR",
+        minimumFractionDigits: 0
+      }).format(n || 0);
+    }
 
-$("#btnPreview").addEventListener("click", buildPreview);
-$("#btnAdd").addEventListener("click", ()=>{
-  const data = buildPreview();
-  if(!data) return;
-  rows.push(data);
-  refreshTable();
-  $("#ref").value = genTN(); // Next line new ref
-});
-$("#btnReset").addEventListener("click", resetForm);
+    function generateRq() {
+      const now = new Date();
+      const mm = String(now.getMonth() + 1).padStart(2, "0");
+      const yy = String(now.getFullYear()).slice(-2);
+      const nn = String(bookingCounter).padStart(2, "0");
+      return `${nn}${mm}${yy}`; // NNMMYY
+    }
 
-$("#btnExport").addEventListener("click", ()=>{
-  const blob = new Blob([JSON.stringify(rows,null,2)], {type:"application/json"});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url; a.download = "booking_preview_v2.json";
-  a.click();
-  URL.revokeObjectURL(url);
-});
-$("#btnPrint").addEventListener("click", ()=> window.print());
+    // ====== MODAL OPEN/CLOSE ======
+    function openModal(booking) {
+      bookingForm.reset();
+      serviceRowsContainer.innerHTML = "";
 
-$("#toggleTheme").addEventListener("click", ()=>{
-  const cur = document.body.getAttribute("data-theme")==="light" ? "dark":"light";
-  document.body.setAttribute("data-theme", cur);
-  localStorage.setItem("theme", cur);
-});
-</script>
+      if (booking) {
+        editingBookingId = booking.id;
+        modalTitle.textContent = "Edit Booking";
+        generatedRqSpan.textContent = booking.rq;
+        bookingDateInput.value = booking.bookingDate;
+        guestNameInput.value = booking.guestName;
+        booking.services.forEach((s) => addServiceRow(s));
+      } else {
+        editingBookingId = null;
+        modalTitle.textContent = "Buat Booking Baru";
+        generatedRqSpan.textContent = generateRq();
+        bookingDateInput.value = todayStr;
+        addServiceRow();
+      }
+      modalBackdrop.classList.add("show");
+    }
+
+    function closeModal() {
+      modalBackdrop.classList.remove("show");
+    }
+
+    // ====== SERVICE ROW (CASCADING SELECT) ======
+    function addServiceRow(initial) {
+      const row = document.createElement("div");
+      row.className = "service-row";
+
+      const typeSelect = document.createElement("select");
+      typeSelect.className = "service-type";
+
+      Object.keys(SUPPLIER_DATA).forEach((type) => {
+        const opt = document.createElement("option");
+        opt.value = type;
+        opt.textContent = type;
+        typeSelect.appendChild(opt);
+      });
+
+      const localitySelect = document.createElement("select");
+      localitySelect.className = "service-locality";
+
+      const supplierSelect = document.createElement("select");
+      supplierSelect.className = "service-supplier";
+
+      const dateInput = document.createElement("input");
+      dateInput.type = "date";
+      dateInput.className = "service-date";
+      dateInput.value = initial?.date || todayStr;
+
+      const priceInput = document.createElement("input");
+      priceInput.type = "number";
+      priceInput.min = "0";
+      priceInput.placeholder = "Harga (IDR)";
+      priceInput.className = "service-price";
+      priceInput.value = initial?.price != null ? initial.price : "";
+
+      const descInput = document.createElement("textarea");
+      descInput.className = "service-desc";
+      descInput.placeholder =
+        "Contoh: Ramayana Suites & Resort, transfer bandara, dll";
+      descInput.value = initial?.description || "";
+
+      const removeBtn = document.createElement("div");
+      removeBtn.className = "pill-danger";
+      removeBtn.textContent = "hapus";
+
+      // helper untuk isi locality dan supplier
+      function populateLocalities(selectedType, selectedLoc, selectedSupplier) {
+        const locs = Object.keys(SUPPLIER_DATA[selectedType] || {});
+        localitySelect.innerHTML = "";
+        locs.forEach((loc) => {
+          const opt = document.createElement("option");
+          opt.value = loc;
+          opt.textContent = loc;
+          localitySelect.appendChild(opt);
+        });
+
+        let locToUse =
+          selectedLoc && locs.includes(selectedLoc) ? selectedLoc : locs[0];
+        localitySelect.value = locToUse || "";
+
+        populateSuppliers(selectedType, locToUse, selectedSupplier);
+      }
+
+      function populateSuppliers(type, loc, selectedSupplier) {
+        const sups = (SUPPLIER_DATA[type] && SUPPLIER_DATA[type][loc]) || [];
+        supplierSelect.innerHTML = "";
+        sups.forEach((s) => {
+          const opt = document.createElement("option");
+          opt.value = s;
+          opt.textContent = s;
+          supplierSelect.appendChild(opt);
+        });
+        if (selectedSupplier && sups.includes(selectedSupplier)) {
+          supplierSelect.value = selectedSupplier;
+        }
+      }
+
+      // apply initial values
+      if (initial?.type && SUPPLIER_DATA[initial.type]) {
+        typeSelect.value = initial.type;
+      }
+      populateLocalities(
+        typeSelect.value,
+        initial?.locality,
+        initial?.supplier
+      );
+
+      // listeners cascading
+      typeSelect.addEventListener("change", () => {
+        populateLocalities(typeSelect.value);
+      });
+
+      localitySelect.addEventListener("change", () => {
+        populateSuppliers(typeSelect.value, localitySelect.value);
+      });
+
+      removeBtn.addEventListener("click", () => {
+        if (serviceRowsContainer.children.length > 1) {
+          row.remove();
+        }
+      });
+
+      // susun row
+      row.appendChild(typeSelect);
+      row.appendChild(localitySelect);
+      row.appendChild(supplierSelect);
+      row.appendChild(dateInput);
+      row.appendChild(priceInput);
+      row.appendChild(removeBtn);
+      serviceRowsContainer.appendChild(row);
+
+      // desc full width di bawah
+      const descWrapper = document.createElement("div");
+      descWrapper.style.gridColumn = "1 / -1";
+      descWrapper.appendChild(descInput);
+      row.appendChild(descWrapper);
+    }
+
+    function collectServicesFromForm() {
+      const rows = serviceRowsContainer.querySelectorAll(".service-row");
+      const services = [];
+      rows.forEach((row) => {
+        const type = row.querySelector(".service-type").value;
+        const locality = row.querySelector(".service-locality").value;
+        const supplier = row.querySelector(".service-supplier").value;
+        const date = row.querySelector(".service-date").value || todayStr;
+        const price = Number(row.querySelector(".service-price").value || 0);
+        const desc = row.querySelector(".service-desc").value.trim();
+        services.push({ type, locality, supplier, date, price, description: desc });
+      });
+      return services;
+    }
+
+    // ====== RENDER DASHBOARD & LIST ======
+    function renderDashboard() {
+      let totalToday = 0;
+      let totalMonth = 0;
+      let totalServices = 0;
+      const now = new Date();
+      const thisMonth = now.getMonth();
+      const thisYear = now.getFullYear();
+
+      bookings.forEach((b) => {
+        b.services.forEach((s) => {
+          totalServices++;
+          const d = new Date(s.date);
+          if (!isNaN(d)) {
+            if (s.date === todayStr) totalToday += s.price || 0;
+            if (d.getMonth() === thisMonth && d.getFullYear() === thisYear) {
+              totalMonth += s.price || 0;
+            }
+          }
+        });
+      });
+
+      revenueTodayEl.textContent = formatCurrency(totalToday);
+      revenueMonthEl.textContent = formatCurrency(totalMonth);
+      totalBookingsEl.textContent = bookings.length;
+      totalServicesEl.textContent = totalServices;
+
+      // table order hari ini
+      const rows = [];
+      bookings.forEach((b) => {
+        b.services.forEach((s) => {
+          if (s.date === todayStr) {
+            if (activeServiceFilter === "all" || s.type === activeServiceFilter) {
+              rows.push({
+                rq: b.rq,
+                guestName: b.guestName,
+                type: s.type,
+                locality: s.locality,
+                supplier: s.supplier,
+                desc: s.description,
+                price: s.price,
+                date: s.date
+              });
+            }
+          }
+        });
+      });
+
+      if (!rows.length) {
+        todayTableWrapper.innerHTML =
+          '<div class="empty-state">Belum ada service dengan tanggal hari ini untuk filter saat ini.</div>';
+      } else {
+        let html = `<div style="overflow:auto;"><table>
+          <thead>
+            <tr>
+              <th>Service date</th>
+              <th>RQ#</th>
+              <th>Guest</th>
+              <th>Type</th>
+              <th>Locality</th>
+              <th>Supplier</th>
+              <th>Harga</th>
+            </tr>
+          </thead>
+          <tbody>`;
+        rows.forEach((r) => {
+          html += `<tr>
+            <td>${r.date}</td>
+            <td><span class="rq-pill"><span>RQ</span>${r.rq}</span></td>
+            <td>${r.guestName}</td>
+            <td><span class="tag small">${r.type}</span></td>
+            <td>${r.locality}</td>
+            <td>${r.supplier}</td>
+            <td>${formatCurrency(r.price)}</td>
+          </tr>`;
+        });
+        html += "</tbody></table></div>";
+        todayTableWrapper.innerHTML = html;
+      }
+    }
+
+    function renderBookingList() {
+      if (!bookings.length) {
+        bookingListWrapper.innerHTML =
+          '<div class="empty-state">Belum ada booking. Tambah data untuk demo CRUD.</div>';
+        return;
+      }
+
+      let html =
+        '<div style="overflow:auto;"><table><thead><tr>' +
+        "<th>RQ#</th><th>Guest</th><th>Arrival</th><th>Total service</th><th>Est. pendapatan</th><th>Aksi</th>" +
+        "</tr></thead><tbody>";
+
+      bookings.forEach((b) => {
+        const revenue = b.services.reduce((acc, s) => acc + (s.price || 0), 0);
+        html += `<tr>
+          <td><span class="rq-pill"><span>RQ</span>${b.rq}</span></td>
+          <td>${b.guestName}</td>
+          <td>${b.bookingDate}</td>
+          <td>${b.services.length}</td>
+          <td>${formatCurrency(revenue)}</td>
+          <td>
+            <button class="btn-link" data-action="edit" data-id="${b.id}">Edit</button>
+            &nbsp;|&nbsp;
+            <button class="btn-link danger" data-action="delete" data-id="${b.id}">Hapus</button>
+          </td>
+        </tr>`;
+      });
+
+      html += "</tbody></table></div>";
+      bookingListWrapper.innerHTML = html;
+    }
+
+    function renderSearchResults(term) {
+      const trimmed = (term || "").toLowerCase().trim();
+      if (!trimmed) {
+        searchResultWrapper.innerHTML =
+          '<div class="empty-state">Ketik RQ# atau nama tamu di atas lalu tekan <b>Enter</b>.</div>';
+        return;
+      }
+
+      const results = bookings.filter(
+        (b) =>
+          b.rq.toLowerCase().includes(trimmed) ||
+          b.guestName.toLowerCase().includes(trimmed)
+      );
+
+      if (!results.length) {
+        searchResultWrapper.innerHTML = `<div class="empty-state">Tidak ada booking untuk "<b>${term}</b>".</div>`;
+        return;
+      }
+
+      let html =
+        '<div style="overflow:auto;"><table><thead><tr>' +
+        "<th>RQ#</th><th>Guest</th><th>Arrival</th><th>Jenis service</th><th>Jumlah service</th><th>Est. pendapatan</th><th>Aksi</th>" +
+        "</tr></thead><tbody>";
+
+      results.forEach((b) => {
+        const types = Array.from(new Set(b.services.map((s) => s.type))).join(", ");
+        const revenue = b.services.reduce((acc, s) => acc + (s.price || 0), 0);
+        html += `<tr>
+          <td><span class="rq-pill"><span>RQ</span>${b.rq}</span></td>
+          <td>${b.guestName}</td>
+          <td>${b.bookingDate}</td>
+          <td>${types}</td>
+          <td>${b.services.length}</td>
+          <td>${formatCurrency(revenue)}</td>
+          <td>
+            <button class="btn-link" data-action="edit" data-id="${b.id}">Edit</button>
+            &nbsp;|&nbsp;
+            <button class="btn-link danger" data-action="delete" data-id="${b.id}">Hapus</button>
+          </td>
+        </tr>`;
+      });
+
+      html += "</tbody></table></div>";
+      searchResultWrapper.innerHTML = html;
+    }
+
+    function searchByDateRange(filter) {
+      const now = new Date();
+      const thisMonth = now.getMonth();
+      const thisYear = now.getFullYear();
+
+      const matched = bookings.filter((b) =>
+        b.services.some((s) => {
+          const d = new Date(s.date);
+          if (isNaN(d)) return false;
+          if (filter === "today") return s.date === todayStr;
+          if (filter === "month")
+            return d.getMonth() === thisMonth && d.getFullYear() === thisYear;
+          return false;
+        })
+      );
+
+      if (!matched.length) {
+        searchResultWrapper.innerHTML =
+          '<div class="empty-state">Belum ada booking untuk filter ini.</div>';
+        return;
+      }
+
+      let html =
+        '<div style="overflow:auto;"><table><thead><tr>' +
+        "<th>RQ#</th><th>Guest</th><th>Arrival</th><th>Total service</th><th>Est. pendapatan</th><th>Aksi</th>" +
+        "</tr></thead><tbody>";
+
+      matched.forEach((b) => {
+        const revenue = b.services.reduce((acc, s) => acc + (s.price || 0), 0);
+        html += `<tr>
+          <td><span class="rq-pill"><span>RQ</span>${b.rq}</span></td>
+          <td>${b.guestName}</td>
+          <td>${b.bookingDate}</td>
+          <td>${b.services.length}</td>
+          <td>${formatCurrency(revenue)}</td>
+          <td>
+            <button class="btn-link" data-action="edit" data-id="${b.id}">Edit</button>
+            &nbsp;|&nbsp;
+            <button class="btn-link danger" data-action="delete" data-id="${b.id}">Hapus</button>
+          </td>
+        </tr>`;
+      });
+
+      html += "</tbody></table></div>";
+      searchResultWrapper.innerHTML = html;
+    }
+
+    // ====== EVENT LISTENERS ======
+    btnOpenModal.addEventListener("click", () => openModal());
+    btnCloseModal.addEventListener("click", closeModal);
+    btnCancelModal.addEventListener("click", closeModal);
+    btnAddServiceRow.addEventListener("click", () => addServiceRow());
+
+    bookingForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const rq = generatedRqSpan.textContent;
+      const bookingDate = bookingDateInput.value || todayStr;
+      const guestName = guestNameInput.value.trim();
+      if (!guestName) {
+        alert("Nama tamu wajib diisi.");
+        return;
+      }
+      const services = collectServicesFromForm();
+      if (!services.length) {
+        alert("Minimal satu service.");
+        return;
+      }
+
+      if (editingBookingId !== null) {
+        const idx = bookings.findIndex((b) => b.id === editingBookingId);
+        if (idx !== -1) {
+          bookings[idx] = {
+            id: editingBookingId,
+            rq,
+            guestName,
+            bookingDate,
+            services
+          };
+        }
+      } else {
+        const id = Date.now(); // simple unique id
+        bookings.push({ id, rq, guestName, bookingDate, services });
+        bookingCounter += 1;
+      }
+
+      closeModal();
+      renderDashboard();
+      renderBookingList();
+      renderSearchResults(searchInput.value);
+    });
+
+    searchInput.addEventListener("keyup", (e) => {
+      if (e.key === "Enter") {
+        renderSearchResults(searchInput.value);
+      }
+    });
+
+    btnSearchToday.addEventListener("click", () => searchByDateRange("today"));
+    btnSearchThisMonth.addEventListener("click", () =>
+      searchByDateRange("month")
+    );
+
+    chips.forEach((chip) => {
+      chip.addEventListener("click", () => {
+        chips.forEach((c) => c.classList.remove("active"));
+        chip.classList.add("active");
+        activeServiceFilter = chip.getAttribute("data-service-filter");
+        renderDashboard();
+      });
+    });
+
+    // event delegation untuk edit/delete di booking list & search result
+    function handleTableClick(e) {
+      const btn = e.target.closest("button[data-action]");
+      if (!btn) return;
+      const action = btn.getAttribute("data-action");
+      const id = Number(btn.getAttribute("data-id"));
+      const booking = bookings.find((b) => b.id === id);
+      if (!booking) return;
+
+      if (action === "edit") {
+        openModal(booking);
+      } else if (action === "delete") {
+        if (confirm("Hapus booking ini dari data sementara?")) {
+          bookings = bookings.filter((b) => b.id !== id);
+          renderDashboard();
+          renderBookingList();
+          renderSearchResults(searchInput.value);
+        }
+      }
+    }
+
+    bookingListWrapper.addEventListener("click", handleTableClick);
+    searchResultWrapper.addEventListener("click", handleTableClick);
+
+    // ====== INIT ======
+    bookingDateInput.value = todayStr;
+    renderDashboard();
+    renderBookingList();
+  </script>
 </body>
 </html>
